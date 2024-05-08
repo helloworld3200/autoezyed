@@ -1,6 +1,7 @@
 from selenium import webdriver as wd
 from selenium.webdriver.common.by import By
 from selenium.webdriver import ActionChains
+from selenium.common.exceptions import NoSuchElementException
 
 # This may be obsolete because ezyed is inefficient xD
 # basically html for non-shown tasks are still present in the DOM so u can
@@ -41,8 +42,11 @@ class AutomaticEzyed:
 
         # TODO: Make this not in the CLI
         task_input = input("Homework ID: ")
+        # Why is the below line commented? See comment above TaskID class
         #task_id = TaskID(task_input)
-        
+        task_element = self.driver.find_element(By.XPATH, "//a[contains(@title, '" + task_input + "')]")
+        task_link = task_element.get_attribute("href")
+        self.go_into_task(task_link)
 
         input("AutomaticEzyed finished automation, press enter to continue")
 
@@ -62,6 +66,17 @@ class AutomaticEzyed:
         ActionChains(self.driver)\
             .send_keys_to_element(element, keys)\
             .perform()
+
+    def go_into_task(self, task_link):
+        self.driver.get(task_link)
+        # If the task has not been attempted, ever, Next button will show.
+        # Otherwise, only the Restart button will show. We need to test for
+        # which one this is.
+        try:
+            element = self.driver.find_element(By.XPATH, "//a[@value='Next']")
+        except NoSuchElementException:
+            element = self.driver.find_element(By.XPATH, "//a[@value='Restart']")
+        element.click()
 
     def select_physics_subject(self):
         element = self.driver.find_element(By.XPATH, self.phyiscs_xpath)
