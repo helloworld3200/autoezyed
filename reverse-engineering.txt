@@ -1,0 +1,56 @@
+Advance quiz: jq_quizNextOn();
+(Source script?)
+
+update_points while IN BREAKPOINT
+start 1160
+jQuery('#student-mark') - correspond to id
+
+.html(whatever) on jquery sets the html to that
+
+parse on 'quiz_prev_score'
+
+score adding is handled on server-side (evidenced by jlms_rfe(response, "quiz_prev_score"))
+it parses the xml response of the ajax request after server received.
+but where r the answers sent?
+
+got it: within jq_Quiznext there r lots of cases in a huge switch statement
+these handle all different types of questions
+basically, the XML response from the request, no matter the "answer" will
+always give u the correct answer, so basically all we need to do is give feed
+the answer that they give u back into it
+
+u can use jlms_makerequest as a starting point to give ur own ajax requests
+make sure first arg is the callback function
+
+structure of post answer request (args only):
+ignore all of the extra junk they add, its unnnecessary
+
+only inacessible variable on the params is "jq-task", this will be "next"
+
+var params = '&atask=' + jq_task + '&quiz='+quiz_id+'&stu_quiz_id='+stu_quiz_id+'&quest_id='+cur_quest_id+'&answer=0'+'&quest_time_is_up='+document.forms.selfverForm.quest_time_is_up.value;
+and just use jlms_makerequest with it like this:
+jlms_MakeRequest("callback_func_name", params, "quiz", 1)
+
+seems to be a lot of stuff within the response at:
+responseXML.all (HTMLAllCollection)
+within this: firstChild.data has useful info
+but where r the answers?
+
+ugg answers r html
+no easier to parse than brute force
+back to square 1
+
+use following js:
+
+function theCallback (req) {
+    console.log(req);
+}
+
+function theSubmit () {
+    let jq_task = "next";
+    let params = '&atask=' + jq_task + '&quiz='+quiz_id+'&stu_quiz_id='+
+    stu_quiz_id+'&quest_id='+cur_quest_id+'&answer=0'+'&quest_time_is_up='+
+    document.forms.selfverForm.quest_time_is_up.value;
+
+    jlms_MakeRequest("theCallback", params, "quiz", 1)
+}
